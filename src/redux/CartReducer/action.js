@@ -1,28 +1,52 @@
-import * as types from "./actionType";
+import * as types from './actionType.js';
+import { cartApi } from '../../api/cartApi.js';
 
-const addToCart = (payload) => ({
-  type: types.ADD_TO_CART,
-  payload,
-});
+export const addToCart = (productId, quantity) => async (dispatch, getState) => {
+  try {
+    const { auth: { userId } } = getState();
+    const response = await cartApi.addCartItem(userId, productId, quantity);
+    dispatch({
+      type: types.ADD_TO_CART,
+      payload: response.data
+    });
+  } catch (error) {
+    console.error('Add to cart error:', error);
+  }
+};
 
-const incQty = (payload) => ({
-  type: types.IN_QTY,
-  payload,
-});
-const decQty = (payload) => ({
-  type: types.DEC_QTY,
-  payload,
-});
+export const fetchCart = () => async (dispatch, getState) => {
+  try {
+    const { auth: { userId } } = getState();
+    const { data } = await cartApi.getUserCartItems(userId);
+    dispatch({
+      type: types.SET_CART,
+      payload: data
+    });
+  } catch (error) {
+    console.error('Fetch cart error:', error);
+  }
+};
 
-const removeItem = (payload) => ({
-  type: types.REMOVE_QTY,
-  payload,
-});
+export const removeItem = (cartItemId) => async (dispatch) => {
+  try {
+    await cartApi.deleteCartItem(cartItemId);
+    dispatch({
+      type: types.REMOVE_QTY,
+      payload: cartItemId
+    });
+  } catch (error) {
+    console.error('Remove item error:', error);
+  }
+};
 
-const clearItem = (payload) => ({
-  type: types.CLEAR_QTY,
-  payload,
-});
-export { addToCart, incQty, decQty, removeItem, clearItem };
-
-// expression assignment erro so check the bracket have use right brackets
+export const updateQuantity = (cartItemId, quantity) => async (dispatch) => {
+  try {
+    await cartApi.changeQuantity(cartItemId, quantity);
+    dispatch({
+      type: types.IN_QTY,
+      payload: { cartItemId, quantity }
+    });
+  } catch (error) {
+    console.error('Update quantity error:', error);
+  }
+};

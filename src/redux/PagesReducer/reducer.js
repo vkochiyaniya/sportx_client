@@ -1,3 +1,4 @@
+// src/redux/PagesReducer/reducer.js
 import * as data from "./actionType";
 
 const init = {
@@ -57,4 +58,6 @@ const pagesReducer = (state = init, action) => {
     }
   }
 };
-export { pagesReducer };
+
+// Change to default export
+export default pagesReducer;

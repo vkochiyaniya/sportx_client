@@ -1,66 +1,50 @@
-import { Box, Flex, HStack, Icon, Image, Text } from "@chakra-ui/react";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-// import { AiOutlineStar } from "react-icons/ai";
-import { StarIcon } from "@chakra-ui/icons";
+// src/components/ProductsDisplay/ProductDis.jsx
+import { Box, Button, Image, Text, Flex } from '@chakra-ui/react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { addToCart } from '../../redux/CartReducer/action.js';
 
-const ProductDis = ({ item }) => {
+const ProductDis = ({ product }) => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { id, name, color, gender, images, final_price, reviews, rating } =
-    item;
-  const [img, setImg] = useState(images[0]);
-  const handleDes = () => {
-    navigate(`/description/${id}`);
-  };
-  const ChangeHoverImage = () => {
-    setImg(images[1]);
-  };
-  const OriginalImage = () => {
-    setImg(images[0]);
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    dispatch(addToCart(product.productId, 1));
   };
 
   return (
-    <div>
-      <Box
-        key={id}
-        width={"95%"}
-        m="auto"
-        onMouseEnter={ChangeHoverImage}
-        onMouseLeave={OriginalImage}
-        onClick={handleDes}
-        my={"3"}
-      >
-        <Box overflow={"hidden"} position={"relative"}>
-          <Image className="imageAnimation" src={img} alt={name} />
-        </Box>
-        <Box
-          textAlign={"left"}
-          color={"darkgrey"}
-          fontSize={["xs", "sm", "md", "md"]}
-        >
-          <Text>{name}</Text>
-          <Text>{gender}</Text>
-          <Text>{color}</Text>
-        </Box>
-        <Flex
-          justify={"left"}
-          gap={"2rem"}
-          fontWeight={"medium"}
-          align={"center"}
-        >
-          <Text as={Flex} alignItems={"center"}  fontSize={["xs", "sm", "md", "md"]}>
-            <Icon as={StarIcon} color="yellow.500" /> : {rating}
+    <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p={4}>
+      <Image 
+        src={`src/img/shoe.jpg/${product.image}`}
+        alt={product.name}
+        height="200px"
+        objectFit="contain"
+      />
+      <Box mt="2">
+        <Text fontWeight="semibold">{product.name}</Text>
+        <Text fontSize="sm" color="gray.600">{product.brand}</Text>
+        <Flex align="center" mt={2}>
+          <Text fontSize="lg" fontWeight="bold">
+            ${product.priceWithDiscount}
           </Text>
-          <Text fontSize={["xs", "sm", "md", "md"]}>Review : ({reviews}) </Text>
+          {product.priceWithDiscount < product.price && (
+            <Text as="del" ml={2} color="gray.500">
+              ${product.price}
+            </Text>
+          )}
         </Flex>
-        <HStack justify={"left"}>
-          <Text fontWeight={"semibold"} fontSize={["sm", "md", "lg", "xl"]}>
-            ₹{final_price}.00
-          </Text>
-        </HStack>
+        <Button onClick={handleAddToCart} mt={2} width="full">
+          Add to Cart
+        </Button>
       </Box>
-    </div>
+    </Box>
   );
 };
 
+// Add this default export
 export default ProductDis;

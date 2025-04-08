@@ -1,72 +1,52 @@
-import * as data from "./actionType";
+import * as types from './actionType.js';
 
-const init = {
+const initialState = {
   cart: [],
+  loading: false,
+  error: null
 };
 
-const cartReducer = (state = init, action) => {
-  const { type, payload } = action;
+const cartReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case types.SET_CART:
+      return {
+        ...state,
+        cart: action.payload
+      };
 
-  switch (type) {
-    case data.ADD_TO_CART: {
-      const isPresent = state.cart.find((item) => {
-        return item.id === payload.id && item.size === payload.size;
-      });
-      let newCart;
-      if (isPresent) {
-        newCart = state.cart.map((item) => {
-          if (item.id === payload.id && item.size === payload.size) {
-            return { ...item, qty: item.qty + 1 };
-          } else {
-            return item;
-          }
-        });
-      } else {
-        let newPayload = {
-          ...payload,
-          qty: 1,
-        };
-        newCart = [...state.cart, newPayload];
-      }
-      return { ...state, cart: newCart };
-    }
+    case types.ADD_TO_CART:
+      return {
+        ...state,
+        cart: [...state.cart, action.payload]
+      };
 
-    case data.IN_QTY: {
-      let newChangeCart = state.cart.map((item) => {
-        if (item.id === payload.id && item.size === payload.size) {
-          return { ...item, qty: item.qty + 1 };
-        } else {
-          return item;
-        }
-      });
+    case types.IN_QTY:
+      return {
+        ...state,
+        cart: state.cart.map(item => 
+          item.cartItemId === action.payload.cartItemId
+            ? { ...item, quantity: action.payload.quantity }
+            : item
+        )
+      };
 
-      return { ...state, cart: newChangeCart };
-    }
+    case types.REMOVE_QTY:
+      return {
+        ...state,
+        cart: state.cart.filter(item => 
+          item.cartItemId !== action.payload
+        )
+      };
 
-    case data.DEC_QTY: {
-      let newChangeCart = state.cart.map((item) => {
-        if (item.id === payload.id && item.size === payload.size) {
-          return { ...item, qty: item.qty - 1 };
-        } else {
-          return item;
-        }
-      });
-
-      return { ...state, cart: newChangeCart };
-    }
-
-    case data.REMOVE_QTY: {
-      let blankTheCart = state.cart.filter((item) => {
-        return !(item.size === payload.size && item.id === payload.id);
-      });
-      return { ...state, cart: blankTheCart };
-    }
-    case data.CLEAR_QTY: {
-      return { ...state, cart: (state.cart = []) };
-    }
+    case types.CLEAR_QTY:
+      return {
+        ...state,
+        cart: []
+      };
 
     default:
       return state;
   }
 };
-export { cartReducer };
+
+export default cartReducer;

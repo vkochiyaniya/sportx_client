@@ -5,26 +5,24 @@ import {
   compose,
   applyMiddleware,
 } from "redux";
-import thunk from "redux-thunk"; // Correct import
-import { dataReducer } from "./DataReducer/reducer";
+import thunk from "redux-thunk";
+import dataReducer from "./DataReducer/reducer";
 import authReducer from "./AuthReducer/reducer";
-import { cartReducer } from "./CartReducer/reducer";
-import { pagesReducer } from "./PagesReducer/reducer";
-import { wishReducer } from "./WishReducer/wishReducer";
+import cartReducer from "./CartReducer/reducer";
+import pagesReducer from "./PagesReducer/reducer";
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 const rootReducer = combineReducers({
-  dataReducer,
+  data: dataReducer,
   cart: cartReducer,
   auth: authReducer,
-  pagesReducer,
-  wishReducer,
+  pages: pagesReducer
 });
 
 const store = legacy_createStore(
   rootReducer,
-  composeEnhancers(applyMiddleware(thunk)) // Pass thunk directly
+  composeEnhancers(applyMiddleware(thunk))
 );
 
 export { store };

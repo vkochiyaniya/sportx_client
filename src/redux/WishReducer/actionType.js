@@ -1,2 +1,0 @@
-export const ADD_TO_WISHLIST = "ADD_TO_WISHLIST";
-export const REMOVE_TO_WISHLIST = "REMOVE_TO_WISHLIST";

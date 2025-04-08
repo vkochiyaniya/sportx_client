@@ -1,92 +1,96 @@
-import {
-  Avatar,
-  Box,
-  Flex,
-  Heading,
-  Icon,
-  // Spacer,
-  Text,
-  useMediaQuery,
-} from "@chakra-ui/react";
+import { Box, Flex, Heading, Text, useMediaQuery } from "@chakra-ui/react";
 import React from "react";
-import portfolio from "../../img/portfolio.png";
-import { BsGithub, BsLinkedin } from "react-icons/bs";
-// import { GiCondorEmblem } from "react-icons/gi";
 import { Link } from "react-router-dom";
+
 const Footer = () => {
-  const [isLargerThan] = useMediaQuery("(min-width: 768px)");
-  const [isSmallerThan] = useMediaQuery("(min-width: 468px)");
+  const [isLargerThan768] = useMediaQuery("(min-width: 768px)");
 
   return (
-    <div className="Footer">
-      <Box
-        bg="black"
-        color="whitesmoke"
-        height={isSmallerThan ? "50vh" : "50vh"}
-        pt="3rem"
-        lineHeight="2rem"
-      >
+    <Box
+      bg="gray.800"
+      color="gray.100"
+      pt="60px"
+      mt="80px"
+      position="relative"
+      _before={{
+        content: '""',
+        position: "absolute",
+        top: "-35px",
+        left: 0,
+        right: 0,
+        height: "70px",
+        bg: "inherit",
+        clipPath: "polygon(0 70%, 100% 0, 100% 100%, 0% 100%)",
+        transform: "rotate(180deg)"
+      }}
+    >
+      <Box maxW="1200px" mx="auto" px={4} pb={8}>
         <Flex
-          justify={"space-evenly"}
-          width={["100%", "100%", "100%", "100%"]}
-          textAlign={isSmallerThan ? "left" : "center"}
-          fontSize={["sm", "md", "md", "md"]}
-          flexDirection={isSmallerThan ? "row" : "column"}
+          direction={isLargerThan768 ? "row" : "column"}
+          gap={8}
+          mb={12}
+          flexWrap="wrap"
         >
-          <Box as={Flex} flexDirection="column">
-            <Heading>Product</Heading>
-            <Text as={Link} to="/allproducts?gender=MEN">Mens Collection</Text>
-            <Text as={Link} to="/allproducts?gender=WOMEN">Womens Collection</Text>
-            <Text as={Link} to="/allproducts?category=shoes" >Shoes Collection</Text>
-            <Text as={Link} to="/allproducts?category=clothes">Clothes Collection</Text>
+          {/* Brand Section */}
+          <Box flex={1} minW="300px">
+            <Heading size="xl" mb={4} bgGradient="linear(to-r, red.400, red.600)" bgClip="text">
+              SPORTSPRO
+            </Heading>
+            <Text color="gray.400" maxW="300px">
+              Equipping athletes with premium performance gear since 2012
+            </Text>
           </Box>
 
-          {isSmallerThan ? (
-            <Box>
-              <Heading>Support</Heading>
-              <Text>Help</Text>
-              <Text>Customer Service</Text>
-              <Text>Shipping</Text>
-              <Text>Order Tracker</Text>
-              <Text>Returns & Exchanges</Text>
-            </Box>
-          ) : null}
+          {/* Sport Categories */}
+          <Flex direction="column" gap={3} flex={1} minW="200px">
+            <Heading size="md" color="red.400" mb={2}>Categories</Heading>
+            <Link to="/allproducts?category=training">
+              <Text _hover={{ color: "red.300", transform: "translateX(4px)" }} transition="0.2s">
+                Training Gear
+              </Text>
+            </Link>
+            <Link to="/allproducts?category=footwear">
+              <Text _hover={{ color: "red.300", transform: "translateX(4px)" }} transition="0.2s">
+                Performance Footwear
+              </Text>
+            </Link>
+            <Link to="/allproducts?category=team">
+              <Text _hover={{ color: "red.300", transform: "translateX(4px)" }} transition="0.2s">
+                Team Equipment
+              </Text>
+            </Link>
+            <Link to="/allproducts?category=recovery">
+              <Text _hover={{ color: "red.300", transform: "translateX(4px)" }} transition="0.2s">
+                Recovery Tools
+              </Text>
+            </Link>
+          </Flex>
 
-          {isLargerThan ? (
-            <Box>
-              <Heading>Company Info</Heading>
-              <Text>About Us</Text>
-              <Text>Entity Details</Text>
-              <Text>Careers</Text>
-              <Text>Company Apps</Text>
-            </Box>
-          ) : null}
-          <Box mt="1rem" display={"flex"} gap="1rem" justifyContent={"center"}>
-            <a
-              href="https://www.linkedin.com/in/naresh-rajput/"
-              target={"_blank"}
-              rel="noreferrer"
-            >
-              <Icon w={9} h={9} my="1rem" as={BsLinkedin} />
-            </a>
-            <a
-              href="https://github.com/nmewada01"
-              target={"_blank"}
-              rel="noreferrer"
-            >
-              <Icon w={9} h={9} my="1rem" as={BsGithub} />
-            </a>
-            <a
-              href="https://nmewada01.github.io/portfolio/"
-              target={"_blank"}
-              rel="noreferrer"
-            >
-              <Avatar w={10} h={10} my="1rem" bg="white" src={portfolio} />
-            </a>
-          </Box>
+          {/* Support */}
+          <Flex direction="column" gap={3} flex={1} minW="200px">
+            <Heading size="md" color="red.400" mb={2}>Support</Heading>
+            <Text _hover={{ color: "red.300", cursor: "pointer" }}>Order Tracking</Text>
+            <Text _hover={{ color: "red.300", cursor: "pointer" }}>Bulk Orders</Text>
+            <Text _hover={{ color: "red.300", cursor: "pointer" }}>Team Discounts</Text>
+            <Text _hover={{ color: "red.300", cursor: "pointer" }}>Warranty Info</Text>
+          </Flex>
+
+          {/* Legal */}
+          <Flex direction="column" gap={3} flex={1} minW="200px">
+            <Heading size="md" color="red.400" mb={2}>Company</Heading>
+            <Text _hover={{ color: "red.300", cursor: "pointer" }}>Athlete Partnerships</Text>
+            <Text _hover={{ color: "red.300", cursor: "pointer" }}>Careers</Text>
+            <Text _hover={{ color: "red.300", cursor: "pointer" }}>Sustainability</Text>
+            <Text _hover={{ color: "red.300", cursor: "pointer" }}>Investor Relations</Text>
+          </Flex>
         </Flex>
+
+        {/* Copyright */}
+        <Text textAlign="center" color="gray.500" pt={8} borderTop="1px solid" borderColor="gray.700">
+          © {new Date().getFullYear()} SPORTSPRO. Fueling champions worldwide.
+        </Text>
       </Box>
-    </div>
+    </Box>
   );
 };
 

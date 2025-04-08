@@ -1,19 +1,21 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import {
+import { 
   Box,
   Button,
   Flex,
   HStack,
-  Icon,
-  Image,
+  Heading,
+  IconButton,
+  Input,
+  InputGroup,
+  InputLeftElement,
   Spacer,
   Text,
   useColorMode,
   useMediaQuery,
 } from "@chakra-ui/react";
-import logo from "../../img/favicon.ico";
-import { BsSuitHeart, BsBag } from "react-icons/bs";
+import { BsSuitHeart, BsBag, BsSearch } from "react-icons/bs";
 import { DarkModeBtn } from "../DarkMode/DarkModeBtn";
 import { useSelector } from "react-redux";
 import SideMenu from "../Sidebar/Sidebar";
@@ -24,174 +26,99 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { colorMode } = useColorMode();
 
-  // Corrected Redux state access
+  // Fixed selector with proper memoization
   const { token, user } = useSelector((state) => state.auth);
-  const cart = useSelector((store) => store.cart?.cart || []);
-  const wishlist = useSelector((store) => store.wishReducer?.wishlist || []);
+  const cart = useSelector((store) => store.cart?.cart ?? []);
+  const wishlist = useSelector((store) => store.wishReducer?.wishlist ?? []);
 
-  // Style configurations
-  const baseStyle = {
-    color: "black",
-    textDecoration: "none",
+  const navStyle = {
+    base: { color: "black", textDecoration: "none" },
+    active: {
+      color: "#027bff",
+      textDecoration: "none",
+      borderBottom: "2px solid #027bff"
+    },
   };
-
-  const activeStyle = {
-    color: "#027bff",
-    textDecoration: "none",
-    transition: "0.5s",
-    borderBottom: "2px solid black",
-  };
-
-  // Navigation handlers
-  const handleHome = () => navigate("/");
-  const handleCart = () => navigate("/cart");
-  const handleHeart = () => navigate("/wishlist");
-  const handleSignup = () => navigate("/register");
 
   return (
-    <div className="Navbar">
-      <Flex
-        h="9vh"
-        display="flex"
-        justifyContent="right"
-        gap="10px"
-        alignItems="center"
-        bg={colorMode === "dark" ? "none" : "#ebecec"}
-      >
+    <Box position="sticky" top="0" zIndex="sticky" bg={colorMode === "dark" ? "gray.800" : "white"} boxShadow="md">
+      {/* Top Bar */}
+      <Flex justifyContent="flex-end" alignItems="center" p={2} borderBottom="1px solid" borderColor="gray.100">
         {token ? (
-          <Box>
-            <Profile colorMode={colorMode} />
-          </Box>
+          <Profile colorMode={colorMode} />
         ) : (
           <Button
-            bg="black"
-            color="whitesmoke"
-            border="1px solid beige"
-            _hover={{
-              bg: "none",
-              color: "teal",
-            }}
+            variant="ghost"
+            colorScheme="blue"
             onClick={() => navigate('/register')}
           >
             Sign up
           </Button>
         )}
-        <Box mr={["5", "6", "7", "9"]}>
-          <DarkModeBtn />
-        </Box>
+        <DarkModeBtn mx={4} />
       </Flex>
 
-      <Flex fontWeight="bold">
-        <HStack onClick={handleHome} cursor="pointer">
-          <Image width="25px" m={5} src={logo} alt="logo" />
-        </HStack>
+      {/* Main Navigation */}
+      <Flex alignItems="center" p={4}>
+        {/* Brand Logo */}
+        <Heading 
+          as="h1" 
+          fontSize="2xl" 
+          fontWeight="bold" 
+          bgGradient="linear(to-r, blue.600, blue.400)"
+          bgClip="text"
+          ml={4}
+          cursor="pointer"
+          onClick={() => navigate('/')}
+        >
+          SPORTX
+        </Heading>
+
         <Spacer />
-        
+
+        {/* Navigation Links */}
         {isLargerThan && (
-          <HStack>
-            <NavLink
-              style={({ isActive }) => (isActive ? activeStyle : baseStyle)}
-              to="/"
-            >
-              <Text color={colorMode === "dark" ? "white" : "black"} my="4" mx="2">
-                Home
-              </Text>
+          <HStack spacing={8} mx={8}>
+            <InputGroup maxW="400px">
+              <InputLeftElement pointerEvents="none">
+                <BsSearch color="gray.300" />
+              </InputLeftElement>
+              <Input placeholder="Search performance gear..." />
+            </InputGroup>
+
+            <NavLink to="/" style={({ isActive }) => isActive ? navStyle.active : navStyle.base}>
+              <Text fontWeight="medium">Home</Text>
             </NavLink>
-            <NavLink
-              style={({ isActive }) => (isActive ? activeStyle : baseStyle)}
-              to="/allproducts"
-            >
-              <Text color={colorMode === "dark" ? "white" : "black"} my="4" mx="2">
-                All Products
-              </Text>
+            <NavLink to="/allproducts" style={({ isActive }) => isActive ? navStyle.active : navStyle.base}>
+              <Text fontWeight="medium">Shop</Text>
             </NavLink>
-            <NavLink
-              style={({ isActive }) => (isActive ? activeStyle : baseStyle)}
-              to="/men"
-            >
-              <Text color={colorMode === "dark" ? "white" : "black"} my="4" mx="2">
-                Men
-              </Text>
+            <NavLink to="/about-us" style={({ isActive }) => isActive ? navStyle.active : navStyle.base}>
+              <Text fontWeight="medium">About</Text>
             </NavLink>
-            <NavLink
-              style={({ isActive }) => (isActive ? activeStyle : baseStyle)}
-              to="/women"
-            >
-              <Text color={colorMode === "dark" ? "white" : "black"} my="4" mx="2">
-                Women
-              </Text>
-            </NavLink>
-            <NavLink
-              style={({ isActive }) => (isActive ? activeStyle : baseStyle)}
-              to="/shoes"
-            >
-              <Text color={colorMode === "dark" ? "white" : "black"} my="4" mx="2">
-                Shoes
-              </Text>
+            <NavLink to="/contact" style={({ isActive }) => isActive ? navStyle.active : navStyle.base}>
+              <Text fontWeight="medium">Contact</Text>
             </NavLink>
           </HStack>
         )}
 
-        <Spacer />
-
-        <HStack>
-          <Box onClick={handleHeart}>
-            <Flex
-              onClick={handleCart}
-              alignItems="center"
-              alignContent="center"
-              justifyContent="center"
-            >
-              <Icon
-                w={6}
-                h={6}
-                my="4"
-                mx="3"
-                as={BsSuitHeart}
-                cursor="pointer"
-              />
-              <Text
-                position="relative"
-                top="-15px"
-                left="-25px"
-                borderRadius="50%"
-                p="0rem 0.3rem"
-                bg="blue.500"
-                color="white"
-              >
-                {wishlist.length}
-              </Text>
-            </Flex>
-          </Box>
-          <Box>
-            <Flex
-              onClick={handleCart}
-              alignItems="center"
-              alignContent="center"
-              justifyContent="center"
-            >
-              <Icon w={6} h={6} my="4" mx="3" as={BsBag} cursor="pointer" />
-              <Text
-                position="relative"
-                top="-15px"
-                left="-25px"
-                borderRadius="50%"
-                p="0rem 0.3rem"
-                bg="blue.500"
-                color="white"
-              >
-                {cart.length}
-              </Text>
-            </Flex>
-          </Box>
-          {!isLargerThan && (
-            <Box>
-              <SideMenu colorMode={colorMode} />
-            </Box>
-          )}
+        {/* Icons */}
+        <HStack spacing={4} mr={4}>
+          <IconButton
+            icon={<BsSuitHeart />}
+            aria-label="Wishlist"
+            variant="ghost"
+            onClick={() => navigate('/wishlist')}
+          />
+          <IconButton
+            icon={<BsBag />}
+            aria-label="Cart"
+            variant="ghost"
+            onClick={() => navigate('/cart')}
+          />
+          {!isLargerThan && <SideMenu colorMode={colorMode} />}
         </HStack>
       </Flex>
-    </div>
+    </Box>
   );
 };
 

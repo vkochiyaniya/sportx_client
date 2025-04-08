@@ -4,12 +4,9 @@ import { Navigate, useLocation } from 'react-router-dom';
 
 const Authentication = ({ children }) => {
   const location = useLocation();
-  const { token } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
-  if (!token) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-  return children;
+  return isAuthenticated ? children : <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 export default Authentication;

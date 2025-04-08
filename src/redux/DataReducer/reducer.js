@@ -1,37 +1,36 @@
-import * as data from "./actionType";
+import {
+  GET_PRODUCTS_REQUEST,
+  GET_PRODUCTS_SUCCESS,
+  GET_PRODUCTS_FAILURE,
+  GET_PRODUCT_DETAILS_REQUEST,
+  GET_PRODUCT_DETAILS_SUCCESS,
+  GET_PRODUCT_DETAILS_FAILURE
+} from './actionType';
 
-const init = {
+const initialState = {
   products: [],
-  isLoading: false,
-  isError: false,
+  productDetails: null,
+  loading: true, // Initialize loading as true
+  error: null,
 };
 
-const dataReducer = (state = init, action) => {
-  const { type, payload } = action;
-  switch (type) {
-    case data.GET_DATA_R: {
-      return {
-        ...state,
-        isLoading: true,
-      };
-    }
-    case data.GET_DATA_S: {
-      return {
-        ...state,
-        isLoading: false,
-        isError:false,
-        products: payload,
-      };
-    }
-    case data.GET_DATA_F: {
-      return {
-        ...state,
-        isError: true,
-      };
-    }
-    default: {
+const dataReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case GET_PRODUCTS_REQUEST:
+    case GET_PRODUCT_DETAILS_REQUEST:
+      return { ...state, loading: true, error: null };
+
+    case GET_PRODUCTS_SUCCESS:
+    case GET_PRODUCT_DETAILS_SUCCESS:
+      return { ...state, loading: false, ...action.payload };
+
+    case GET_PRODUCTS_FAILURE:
+    case GET_PRODUCT_DETAILS_FAILURE:
+      return { ...state, loading: false, error: action.payload };
+
+    default:
       return state;
-    }
   }
 };
-export { dataReducer };
+
+export default dataReducer;

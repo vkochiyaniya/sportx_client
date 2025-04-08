@@ -1,32 +1,33 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import Home from "../Pages/Home";
-import Login from "../Pages/Login";
-import SignUp from "../Pages/SignUp";
-import MyAccount from "../Pages/MyAccount";
-import Authentication from "../PrivateRoute/Authentication";
-import AllProducts from "../Pages/AllProducts";
+// src/Pages/AllProducts.jsx
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { SimpleGrid, Box, Heading } from '@chakra-ui/react';
+import { getProducts } from '../redux/DataReducer/action.js';
+import ProductDis from '../components/ProductsDisplay/ProductDis';
+import Loading from '../components/Loading/Loading';
+import Error from '../components/Loading/Error';
 
-// Create this file if missing
-const Home = () => <div>Welcome to our store!</div>; 
+const AllProducts = () => {
+  const dispatch = useDispatch();
+  const { products, loading, error } = useSelector((state) => state.data);
 
-const AllRoutes = () => {
+  useEffect(() => {
+    dispatch(getProducts());
+  }, [dispatch]);
+
+  if (loading) return <Loading />;
+  if (error) return <Error message={error} />;
+
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/products" element={<AllProducts />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<SignUp />} />
-      <Route
-        path="/account"
-        element={
-          <Authentication>
-            <MyAccount />
-          </Authentication>
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <Box p={8}>
+      <Heading mb={8}>All Products</Heading>
+      <SimpleGrid columns={[1, 2, 3, 4]} spacing={8}>
+        {products.map((product) => (
+          <ProductDis key={product.productId} product={product} />
+        ))}
+      </SimpleGrid>
+    </Box>
   );
 };
 
-export default AllRoutes;
+export default AllProducts;

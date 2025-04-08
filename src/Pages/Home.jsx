@@ -1,121 +1,258 @@
+// HomePage.jsx
 import {
   Box,
   Button,
+  Container,
   Flex,
   Grid,
   Heading,
   Image,
+  Input,
   Stack,
   Text,
+  useBreakpointValue,
 } from "@chakra-ui/react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import Carousel from "../components/Carousel/Carousel";
-import Loading from "../components/Loading/Loading";
-import Trending from "../components/Trends/Trending";
-import { imagesData } from "../utils/data";
-import Navbar from "../components/Navbar/Navbar";
 
-const Home = () => {
-  const loading = useSelector((store) => store.pagesReducer.isLoading);
+const HomePage = () => {
   const navigate = useNavigate();
+  const responsiveColumns = useBreakpointValue({ base: 1, md: 2, lg: 3 });
+
+  const heroContent = {
+    heading: "Elevate Your Game",
+    subheading: "Premium Sports Gear & Athletic Wear",
+    bgImage:
+      "https://images.unsplash.com/photo-1530549387789-4c1017266635?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
+  };
+
+  const categories = [
+    {
+      title: "Running Shoes",
+      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+      link: "/running",
+    },
+    {
+      title: "Training Gear",
+      image: "https://images.unsplash.com/photo-1581009137042-c552e485697a",
+      link: "/training",
+    },
+    {
+      title: "Team Sports",
+      image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20",
+      link: "/team-sports",
+    },
+  ];
+
+  const featuredProducts = [
+    {
+      name: "Pro Runner XT",
+      price: "$149.99",
+      image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5",
+    },
+    {
+      name: "Training Gloves",
+      price: "$39.99",
+      image: "https://images.unsplash.com/photo-1583373834259-46cc92173cb7",
+    },
+    {
+      name: "Sports Backpack",
+      price: "$79.99",
+      image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3",
+    },
+  ];
 
   return (
     <Box>
-      <Navbar />
-      {loading ? (
-        <Loading />
-      ) : (
-        <>
-          <Box w="95%" m="auto" mt={4}>
-            <Carousel />
-            <Trending />
-          </Box>
-
-          <Box my={10}>
-            <Stack spacing={5} mx={4} my={6}>
-              <Heading textAlign="left" fontSize="2xl">
-                WHO ARE YOU SHOPPING FOR?
-              </Heading>
-              <Grid
-                templateColumns={["1fr", "repeat(2, 1fr)", "repeat(3, 1fr)"]}
-                gap={4}
-              >
-                {imagesData.map((item) => (
-                  <Box
-                    key={item.id}
-                    position="relative"
-                    overflow="hidden"
-                    borderRadius="md"
-                    _hover={{
-                      transform: "scale(1.02)",
-                      transition: "transform 0.3s ease",
-                    }}
-                  >
-                    <Image
-                      src={item.link}
-                      alt={item.title}
-                      objectFit="cover"
-                      w="full"
-                      h={["50vh", "60vh"]}
-                    />
-                    <Box
-                      position="absolute"
-                      bottom={4}
-                      left={4}
-                      color="white"
-                    >
-                      <Heading fontSize={["xl", "2xl"]}>{item.product}</Heading>
-                      <Button
-                        mt={2}
-                        colorScheme="teal"
-                        onClick={() => navigate(item.route)}
-                      >
-                        SHOP NOW
-                      </Button>
-                    </Box>
-                  </Box>
-                ))}
-              </Grid>
-            </Stack>
-          </Box>
-
-          <Box my={10}>
-            <Stack spacing={5} mx={4} my={6} w="95%" m="auto">
-              <Heading fontSize="2xl">MEN’S CLOTHING & SHOES</Heading>
-              <Text fontSize={["sm", "md"]}>
-                As a creator, you look for ways to excel and express yourself when
-                and where you can, from reaching for that last rep to evolving your
-                streetwear style. Log miles or tear down the baseline in men's shoes
-                with responsive cushioning. Rep an athletic style off the field in
-                lifestyle apparel born of sport heritage.
-              </Text>
-            </Stack>
-
-            <Flex
-              bg="yellow.400"
-              color="black"
-              p={8}
-              direction="column"
-              align="center"
+      {/* Hero Section */}
+      <Box
+        position="relative"
+        h="100vh"
+        bgImage={`url('${heroContent.bgImage}')`}
+        bgSize="cover"
+        bgPosition="center"
+      >
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bgGradient="linear(to-r, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3))"
+        >
+          <Container centerContent h="full" maxW="container.xl">
+            <Stack
+              spacing={6}
               textAlign="center"
+              color="white"
+              mt={{ base: 20, md: 40 }}
             >
-              <Heading mb={4} fontSize="2xl">
-                JOIN ADIDAS AND GET 15% OFF
+              <Heading fontSize={{ base: "4xl", md: "6xl" }}>
+                {heroContent.heading}
               </Heading>
+              <Text fontSize={{ base: "lg", md: "xl" }}>
+                {heroContent.subheading}
+              </Text>
               <Button
-                colorScheme="blackAlpha"
+                colorScheme="red"
                 size="lg"
-                onClick={() => navigate("/register")}
+                width="fit-content"
+                mx="auto"
+                onClick={() => navigate("/shop")}
               >
-                Sign Up
+                Shop Now
               </Button>
-            </Flex>
-          </Box>
-        </>
-      )}
+            </Stack>
+          </Container>
+        </Box>
+      </Box>
+
+      {/* Categories Grid */}
+      <Container maxW="container.xl" py={16}>
+        <Heading textAlign="center" mb={12} fontSize="3xl">
+          Shop By Category
+        </Heading>
+        <Grid
+          templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
+          gap={8}
+          px={{ base: 4, md: 0 }}
+        >
+          {categories.map((category, index) => (
+            <Box
+              key={index}
+              position="relative"
+              borderRadius="xl"
+              overflow="hidden"
+              _hover={{ transform: "scale(1.02)", transition: "0.3s ease" }}
+            >
+              <Image
+                src={category.image}
+                alt={category.title}
+                h="400px"
+                w="full"
+                objectFit="cover"
+              />
+              <Box
+                position="absolute"
+                bottom={0}
+                left={0}
+                right={0}
+                p={6}
+                bgGradient="linear(to-t, rgba(0,0,0,0.8), transparent)"
+              >
+                <Heading color="white" fontSize="2xl">
+                  {category.title}
+                </Heading>
+                <Button
+                  mt={4}
+                  colorScheme="red"
+                  onClick={() => navigate(category.link)}
+                >
+                  Explore
+                </Button>
+              </Box>
+            </Box>
+          ))}
+        </Grid>
+      </Container>
+
+      {/* Featured Products */}
+      <Box bg="gray.50" py={16}>
+        <Container maxW="container.xl">
+          <Heading textAlign="center" mb={12} fontSize="3xl">
+            Best Sellers
+          </Heading>
+          <Flex
+            overflowX="auto"
+            pb={6}
+            css={{
+              "&::-webkit-scrollbar": { display: "none" },
+              "-ms-overflow-style": "none",
+              scrollbarWidth: "none",
+            }}
+          >
+            {featuredProducts.map((product, index) => (
+              <Box
+                key={index}
+                minW={{ base: "300px", md: "400px" }}
+                mx={4}
+                bg="white"
+                borderRadius="xl"
+                overflow="hidden"
+                boxShadow="lg"
+              >
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  h="300px"
+                  w="full"
+                  objectFit="cover"
+                />
+                <Box p={6}>
+                  <Heading fontSize="xl">{product.name}</Heading>
+                  <Text fontSize="lg" fontWeight="bold" color="red.500" mt={2}>
+                    {product.price}
+                  </Text>
+                  <Button
+                    colorScheme="blackAlpha"
+                    mt={4}
+                    width="full"
+                    onClick={() => navigate("/product")}
+                  >
+                    Quick Add
+                  </Button>
+                </Box>
+              </Box>
+            ))}
+          </Flex>
+        </Container>
+      </Box>
+
+      {/* Promo Banner */}
+      <Box bg="red.600" color="white" py={20}>
+        <Container maxW="container.xl" textAlign="center">
+          <Heading fontSize="4xl" mb={6}>
+            Summer Sale: Up to 50% Off
+          </Heading>
+          <Text fontSize="xl" mb={8}>
+            Limited time offer on selected items
+          </Text>
+          <Button
+            colorScheme="whiteAlpha"
+            size="lg"
+            onClick={() => navigate("/sale")}
+          >
+            Shop Sale
+          </Button>
+        </Container>
+      </Box>
+
+      {/* Newsletter Section */}
+      <Container maxW="container.md" py={20}>
+        <Stack spacing={6} textAlign="center">
+          <Heading fontSize="3xl">Get the Latest Updates</Heading>
+          <Text fontSize="lg" color="gray.600">
+            Subscribe to our newsletter for exclusive offers and product releases
+          </Text>
+          <Flex gap={4} justify="center">
+            <Input
+              placeholder="Enter your email"
+              size="lg"
+              maxW="400px"
+              borderRadius="full"
+            />
+            <Button
+              colorScheme="red"
+              size="lg"
+              borderRadius="full"
+              px={8}
+            >
+              Subscribe
+            </Button>
+          </Flex>
+        </Stack>
+      </Container>
     </Box>
   );
 };
 
-export default Home;
+export default HomePage;
