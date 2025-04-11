@@ -1,21 +1,20 @@
 // src/api/axios.js
 import axios from 'axios';
 
-const BASE_URL = 'https://localhost:7214/api/';
-
+// Create axios instance with base URL
 const axiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: 'https://localhost:7214/api/',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor for API calls
+// Request interceptor to add auth token to requests
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -24,20 +23,19 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor for API calls
+// Response interceptor to handle 401 unauthorized responses
 axiosInstance.interceptors.response.use(
   (response) => {
     return response;
   },
-  async (error) => {
-    const originalRequest = error.config;
-    
-    // Handle errors (e.g., 401 Unauthorized, refresh token logic, etc.)
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      // Handle token refresh or redirect to login
-      // This is where you'd implement token refresh logic if needed
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Clear auth data and redirect to login
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userInfo');
+      window.location.href = '/login';
     }
-    
     return Promise.reject(error);
   }
 );

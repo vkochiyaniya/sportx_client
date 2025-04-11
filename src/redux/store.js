@@ -1,28 +1,19 @@
 // src/redux/store.js
-import {
-  legacy_createStore,
-  combineReducers,
-  compose,
-  applyMiddleware,
-} from "redux";
-import thunk from "redux-thunk";
+import { configureStore } from '@reduxjs/toolkit';
+import authReducer from './slices/authSlice';
 import dataReducer from "./DataReducer/reducer";
-import authReducer from "./AuthReducer/reducer";
-import cartReducer from "./CartReducer/reducer";
+import cartReducer from './slices/cartSlice';
 import pagesReducer from "./PagesReducer/reducer";
+import orderReducer from './slices/orderSlice';
+import paymentReducer from './slices/paymentSlice';
 
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-
-const rootReducer = combineReducers({
-  data: dataReducer,
-  cart: cartReducer,
-  auth: authReducer,
-  pages: pagesReducer
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    data: dataReducer,
+    cart: cartReducer,
+    pages: pagesReducer,
+    orders: orderReducer,
+    payment: paymentReducer
+  },
 });
-
-const store = legacy_createStore(
-  rootReducer,
-  composeEnhancers(applyMiddleware(thunk))
-);
-
-export { store };

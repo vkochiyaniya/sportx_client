@@ -14,6 +14,7 @@ import {
   Text,
   useColorMode,
   useMediaQuery,
+  useToast,
 } from "@chakra-ui/react";
 import { BsSuitHeart, BsBag, BsSearch } from "react-icons/bs";
 import { DarkModeBtn } from "../DarkMode/DarkModeBtn";
@@ -25,11 +26,31 @@ const Navbar = () => {
   const [isLargerThan] = useMediaQuery("(min-width: 768px)");
   const navigate = useNavigate();
   const { colorMode } = useColorMode();
+  const toast = useToast();
 
   // Fixed selector with proper memoization
-  const { token, user } = useSelector((state) => state.auth);
+  const { token, userId, isAuthenticated } = useSelector((state) => state.auth);
   const cart = useSelector((store) => store.cart?.cart ?? []);
   const wishlist = useSelector((store) => store.wishReducer?.wishlist ?? []);
+
+  const handleCartClick = () => {
+    console.log('Cart click - Auth state:', { token, userId, isAuthenticated });
+    
+    if (!token || !userId) {
+      console.log('Auth check failed - redirecting to login');
+      toast({
+        title: 'Please log in',
+        description: 'You need to be logged in to view your cart',
+        status: 'warning',
+        duration: 3000,
+      });
+      navigate('/login');
+      return;
+    }
+    
+    console.log('Auth check passed - navigating to cart');
+    navigate('/cart');
+  };
 
   const navStyle = {
     base: { color: "black", textDecoration: "none" },
@@ -113,7 +134,7 @@ const Navbar = () => {
             icon={<BsBag />}
             aria-label="Cart"
             variant="ghost"
-            onClick={() => navigate('/cart')}
+            onClick={handleCartClick}
           />
           {!isLargerThan && <SideMenu colorMode={colorMode} />}
         </HStack>

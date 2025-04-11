@@ -166,7 +166,7 @@ const HomePage = () => {
             pb={6}
             css={{
               "&::-webkit-scrollbar": { display: "none" },
-              "-ms-overflow-style": "none",
+              msOverflowStyle: "none",
               scrollbarWidth: "none",
             }}
           >

@@ -1,7 +1,8 @@
 // src/redux/AuthReducer/actions.js
 import * as types from './actionType.js';
-import { userApi } from '../../api/userApi';
+import userApi from '../../api/userApi';
 import { saveLocalData, removeLocalData } from '../../utils/localStorage';
+import { getIcon } from '../../utils/iconMapping.jsx';
 
 const handleError = (error) => {
   // Handle Axios error structure
@@ -152,5 +153,17 @@ export const setNewPassword = (userId, newPassword) => async (dispatch) => {
   } catch (error) {
     dispatch({ type: types.PASSWORD_RESET_FAILURE, payload: handleError(error) });
     throw error;
+  }
+};
+
+export const verifyAuth = () => async (dispatch) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      const user = await authApi.verifyToken(token);
+      dispatch({ type: types.LOGIN_SUCCESS, payload: user });
+    } catch (error) {
+      localStorage.removeItem('token');
+    }
   }
 };

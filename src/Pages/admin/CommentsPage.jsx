@@ -17,7 +17,7 @@ import {
   Text,
   Button,
 } from "@chakra-ui/react";
-import { FiTrash2, FiCheck } from "react-icons/fi";
+import { getIcon } from "../../utils/iconMapping.jsx";
 import AdminLayout from "../../components/admin/AdminLayout";
 import DeleteConfirmationAlert from "../../components/admin/DeleteConfirmationAlert";
 import { getComments, updateCommentStatus, deleteComment } from "../../api/adminApi";
@@ -165,7 +165,7 @@ const CommentsPage = () => {
                       <Flex gap={2}>
                         {!comment.status && (
                           <IconButton
-                            icon={<FiCheck />}
+                            icon={getIcon("check")}
                             aria-label="Approve comment"
                             size="sm"
                             colorScheme="green"
@@ -173,7 +173,7 @@ const CommentsPage = () => {
                           />
                         )}
                         <IconButton
-                          icon={<FiTrash2 />}
+                          icon={getIcon("trash")}
                           aria-label="Delete comment"
                           size="sm"
                           colorScheme="red"

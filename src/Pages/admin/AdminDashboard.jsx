@@ -10,7 +10,7 @@ import {
   Text,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiShoppingBag, FiTag, FiUsers, FiMessageCircle } from 'react-icons/fi';
+import { getIcon } from "../../utils/iconMapping.jsx";
 import AdminLayout from '../../components/admin/AdminLayout';
 
 // Import APIs
@@ -21,7 +21,7 @@ import { getComments } from '../../api/adminApi';
 
 const StatsCard = ({ title, stat, icon, helpText }) => {
   const bg = useColorModeValue('white', 'gray.700');
-  const IconComponent = icon;
+  const IconComponent = getIcon(icon);
   
   return (
     <Stat
@@ -103,22 +103,22 @@ const AdminDashboard = () => {
           <StatsCard
             title="Total Products"
             stat={isLoading ? 'Loading...' : stats.products}
-            icon={FiShoppingBag}
+            icon={getIcon('shopping-bag')}
           />
           <StatsCard
             title="Categories"
             stat={isLoading ? 'Loading...' : stats.categories}
-            icon={FiTag}
+            icon={getIcon('tag')}
           />
           <StatsCard
             title="Registered Users"
             stat={isLoading ? 'Loading...' : stats.users}
-            icon={FiUsers}
+            icon={getIcon('users')}
           />
           <StatsCard
             title="Comments"
             stat={isLoading ? 'Loading...' : stats.comments}
-            icon={FiMessageCircle}
+            icon={getIcon('message-circle')}
           />
         </SimpleGrid>
 

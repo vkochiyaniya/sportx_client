@@ -15,13 +15,13 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <BrowserRouter>
-        <Provider store={store}>
+      <Provider store={store}>
+        <BrowserRouter>
           <ChakraProvider theme={theme}>
             <App />
           </ChakraProvider>
-        </Provider>
-      </BrowserRouter>
+        </BrowserRouter>
+      </Provider>
     </ErrorBoundary>
   </React.StrictMode>
 );

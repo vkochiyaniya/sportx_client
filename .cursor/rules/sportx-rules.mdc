@@ -1,0 +1,18 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Project Rule 
+- Keep answers concise and direct
+- Suggest alternative solutions
+- Avoid unnecessary explanations
+- Prioritize technical details over generic advice
+- Always use async/await for API calls
+- Follow Redux Toolkit patterns
+- Use Chakra UI components
+- Validate forms with react-hook-form
+
+
+

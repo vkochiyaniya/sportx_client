@@ -30,7 +30,7 @@ import {
   Flex,
   Spinner,
 } from "@chakra-ui/react";
-import { FiTrash2, FiEdit, FiPlus } from "react-icons/fi";
+import { getIcon } from "../../utils/iconMapping.jsx";
 import AdminLayout from "../../components/admin/AdminLayout";
 import {
   getCategories,
@@ -191,7 +191,7 @@ const CategoriesPage = () => {
         <Flex justify="space-between" align="center" mb={6}>
           <Heading size="lg">Categories Management</Heading>
           <Button 
-            leftIcon={<FiPlus />} 
+            leftIcon={getIcon("plus")} 
             colorScheme="blue" 
             onClick={() => openCategoryModal()}
           >
@@ -232,13 +232,13 @@ const CategoriesPage = () => {
                   <Td>
                     <HStack spacing={2}>
                       <IconButton
-                        icon={<FiEdit />}
+                        icon={getIcon("edit")}
                         aria-label="Edit category"
                         size="sm"
                         onClick={() => openCategoryModal(category)}
                       />
                       <IconButton
-                        icon={<FiTrash2 />}
+                        icon={getIcon("trash")}
                         aria-label="Delete category"
                         size="sm"
                         colorScheme="red"

@@ -33,7 +33,7 @@ import {
   InputGroup,
   InputLeftElement,
 } from "@chakra-ui/react";
-import { FiTrash2, FiEdit, FiSearch, FiPlus } from "react-icons/fi";
+import { getIcon } from "../../utils/iconMapping.jsx";
 import AdminLayout from "../../components/admin/AdminLayout";
 import {
   getProducts,
@@ -261,7 +261,7 @@ const ProductsPage = () => {
         <Flex justify="space-between" align="center" mb={5}>
           <Heading size="lg">Products</Heading>
           <Button
-            leftIcon={<FiPlus />}
+            leftIcon={getIcon("plus")}
             colorScheme="blue"
             onClick={() => openProductModal()}
           >
@@ -271,12 +271,12 @@ const ProductsPage = () => {
 
         {/* Search bar */}
         <Flex mb={5}>
-          <InputGroup size="md" maxW="400px">
+          <InputGroup>
             <InputLeftElement pointerEvents="none">
-              <FiSearch color="gray.300" />
+              {getIcon("searchIcon")}
             </InputLeftElement>
             <Input
-              placeholder="Search products by name"
+              placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -326,13 +326,13 @@ const ProductsPage = () => {
                     <Td>
                       <HStack spacing={2}>
                         <IconButton
-                          icon={<FiEdit />}
+                          icon={getIcon("edit")}
                           aria-label="Edit product"
                           size="sm"
                           onClick={() => openProductModal(product)}
                         />
                         <IconButton
-                          icon={<FiTrash2 />}
+                          icon={getIcon("trash")}
                           aria-label="Delete product"
                           size="sm"
                           colorScheme="red"

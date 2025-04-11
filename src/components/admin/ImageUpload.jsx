@@ -9,7 +9,7 @@ import {
   IconButton,
   Flex,
 } from '@chakra-ui/react';
-import { FiX } from 'react-icons/fi';
+import { getIcon } from "../../utils/iconMapping.jsx";
 
 const ImageUpload = ({ 
   name, 
@@ -69,7 +69,7 @@ const ImageUpload = ({
             objectFit="contain"
           />
           <IconButton
-            icon={<FiX />}
+            icon={getIcon('remove')}
             size="sm"
             colorScheme="red"
             position="absolute"

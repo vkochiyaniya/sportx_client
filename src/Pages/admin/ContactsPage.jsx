@@ -23,7 +23,7 @@ import {
   ModalCloseButton,
   useDisclosure,
 } from "@chakra-ui/react";
-import { FiEye } from "react-icons/fi";
+import { getIcon } from "../../utils/iconMapping.jsx";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { getContacts } from "../../api/adminApi";
 
@@ -116,7 +116,7 @@ const ContactsPage = () => {
                     <Td>{formatDate(contact.date)}</Td>
                     <Td>
                       <Button
-                        leftIcon={<FiEye />}
+                        leftIcon={getIcon("eye")}
                         size="sm"
                         colorScheme="blue"
                         onClick={() => openContactDetails(contact)}

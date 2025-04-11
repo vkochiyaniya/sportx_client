@@ -71,7 +71,7 @@ const Profile = ({ colorMode }) => {
             <MenuItem fontWeight="bold">{user?.name || ""}</MenuItem>
             <MenuDivider />
             {user ? (
-              <MenuItem onClick={() => navigate("/myaccount")}>
+              <MenuItem onClick={() => navigate("/account")}>
                 <Avatar
                   size="xs"
                   name={user?.name || ""}
@@ -80,7 +80,7 @@ const Profile = ({ colorMode }) => {
                 <Text fontSize="sm">{user?.email || ""}</Text>
               </MenuItem>
             ) : (
-              <MenuItem onClick={() => navigate("/myaccount")}>
+              <MenuItem onClick={() => navigate("/account")}>
                 <CgProfile /> My Account
               </MenuItem>
             )}

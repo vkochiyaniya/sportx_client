@@ -1,94 +1,134 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { loginUser } from '../redux/AuthReducer/action.js';
-import { 
-  Box, 
-  Button, 
-  FormControl, 
-  FormLabel, 
-  Input, 
-  Stack, 
-  Text, 
-  useToast 
+import { useNavigate, Link } from 'react-router-dom';
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  VStack,
+  Heading,
+  Text,
+  useToast,
+  Container,
+  InputGroup,
+  InputRightElement,
+  IconButton,
 } from '@chakra-ui/react';
+import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
+import { login } from '../redux/slices/authSlice';
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const toast = useToast();
-  
-  // Get loading and error from Redux state
   const { loading, error } = useSelector((state) => state.auth);
+
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const result = await dispatch(loginUser({ email, password }));
-      if (result?.payload?.userId) {
-        await dispatch(loadUser(result.payload.userId));
-        navigate("/account");
-      }
-    } catch (error) {
+      await dispatch(login(formData)).unwrap();
       toast({
-        title: "Login Failed",
-        description: error || 'Invalid credentials',
-        status: "error",
+        title: 'Login Successful',
+        description: 'Welcome back!',
+        status: 'success',
         duration: 3000,
+        isClosable: true,
+      });
+      navigate('/');
+    } catch (err) {
+      toast({
+        title: 'Login Failed',
+        description: err.message || 'Invalid credentials',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
       });
     }
   };
 
   return (
-    <Box p={4} maxW="md" mx="auto">
-      <form onSubmit={handleSubmit}>
-        <Stack spacing={4}>
-          <FormControl isRequired>
-            <FormLabel>Email</FormLabel>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-            />
-          </FormControl>
+    <Container maxW="container.sm" py={10}>
+      <Box
+        p={8}
+        borderWidth={1}
+        borderRadius="lg"
+        boxShadow="lg"
+        bg="white"
+        _dark={{ bg: 'gray.800' }}
+      >
+        <VStack spacing={4} align="stretch">
+          <Heading textAlign="center" mb={6}>
+            Login
+          </Heading>
+          <form onSubmit={handleSubmit}>
+            <VStack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel>Email</FormLabel>
+                <Input
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email"
+                />
+              </FormControl>
 
-          <FormControl isRequired>
-            <FormLabel>Password</FormLabel>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-            />
-          </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Password</FormLabel>
+                <InputGroup>
+                  <Input
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                  />
+                  <InputRightElement>
+                    <IconButton
+                      icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
+                      onClick={() => setShowPassword(!showPassword)}
+                      variant="ghost"
+                    />
+                  </InputRightElement>
+                </InputGroup>
+              </FormControl>
 
-          <Button
-            type="submit"
-            colorScheme="blue"
-            width="full"
-            isLoading={loading}
-          >
-            Sign In
-          </Button>
+              <Button
+                type="submit"
+                colorScheme="blue"
+                width="full"
+                isLoading={loading}
+                loadingText="Logging in..."
+              >
+                Login
+              </Button>
+            </VStack>
+          </form>
 
-          {error && (
-            <Text color="red.500" textAlign="center">
-              {error}
-            </Text>
-          )}
-
-          <Text textAlign="center">
+          <Text textAlign="center" mt={4}>
             Don't have an account?{' '}
-            <RouterLink to="/register" style={{ color: 'blue.500' }}>
-              Register here
-            </RouterLink>
+            <Link to="/signup">
+              <Text as="span" color="blue.500">
+                Sign up here
+              </Text>
+            </Link>
           </Text>
-        </Stack>
-      </form>
-    </Box>
+        </VStack>
+      </Box>
+    </Container>
   );
 };
 
