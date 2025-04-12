@@ -226,7 +226,7 @@ const initialState = {
   user: null,
   token: getToken(),
   userId: getUserId(),
-  isAuthenticated: !!getToken(),
+  isAuthenticated: !!(getToken() && getUserId()),
   loading: false,
   error: null,
   success: null,
@@ -243,6 +243,14 @@ const authSlice = createSlice({
     clearSuccess: (state) => {
       state.success = null;
     },
+    initializeAuth: (state) => {
+      const token = getToken();
+      const userId = getUserId();
+      state.token = token;
+      state.userId = userId;
+      state.isAuthenticated = !!(token && userId);
+      state.loading = false;
+    }
   },
   extraReducers: (builder) => {
     // Login
@@ -256,10 +264,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
         state.token = action.payload.token;
-        
-        // Use the userId from the response instead of the token's sub claim
         state.userId = action.payload.userId;
-        
         state.user = action.payload.user;
         state.success = 'Login successful';
         
@@ -382,5 +387,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, clearSuccess } = authSlice.actions;
+export const { clearError, clearSuccess, initializeAuth } = authSlice.actions;
 export default authSlice.reducer; 

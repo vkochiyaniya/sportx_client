@@ -31,26 +31,43 @@ const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const toast = useToast();
-  const { token, user } = useSelector((state) => state.auth);
+  const { token, userId, isAuthenticated } = useSelector((state) => state.auth);
   const { items, loading, error, subtotal, discount, total, voucher } = useSelector((state) => state.cart);
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm();
-  const userId = useSelector((state) => state.auth.user?.id);
   const [voucherCode, setVoucherCode] = useState('');
 
   useEffect(() => {
-    if (!user) {
-      toast({
-        title: 'Please log in',
-        description: 'You need to be logged in to view your cart',
-        status: 'warning',
-        duration: 3000,
-      });
-      navigate('/login');
-      return;
-    }
+    const checkAuthAndFetchCart = async () => {
+      // Check authentication
+      if (!token || !userId) {
+        console.log('No auth state - Redirecting to login');
+        toast({
+          title: 'Please log in',
+          description: 'You need to be logged in to view your cart',
+          status: 'warning',
+          duration: 3000,
+        });
+        navigate('/login');
+        return;
+      }
 
-    dispatch(fetchCartItems(user.id));
-  }, [dispatch, user, navigate, toast]);
+      // If authenticated, fetch cart
+      try {
+        console.log('Fetching cart items for user:', userId);
+        await dispatch(fetchCartItems(userId)).unwrap();
+      } catch (error) {
+        console.error('Error fetching cart items:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load cart items',
+          status: 'error',
+          duration: 3000,
+        });
+      }
+    };
+
+    checkAuthAndFetchCart();
+  }, [dispatch, navigate, toast, token, userId]);
 
   useEffect(() => {
     if (error) {
@@ -62,7 +79,17 @@ const Cart = () => {
         isClosable: true,
       });
     }
-  }, [error, toast, dispatch]);
+  }, [error, toast]);
+
+  // Add logging for cart state changes
+  useEffect(() => {
+    console.log('Cart state updated:', {
+      items,
+      loading,
+      error,
+      auth: { token, userId, isAuthenticated }
+    });
+  }, [items, loading, error, token, userId, isAuthenticated]);
 
   const handleRemoveItem = async (cartItemId) => {
     try {
@@ -214,47 +241,44 @@ const Cart = () => {
             ))}
           </VStack>
         </Box>
-
         <Box>
           <Box p={6} borderWidth={1} borderRadius="lg" shadow="sm">
             <Heading size="md" mb={4}>Order Summary</Heading>
             <VStack spacing={4} align="stretch">
-              <Flex justify="space-between">
+              <HStack justify="space-between">
                 <Text>Subtotal</Text>
                 <Text>${calculateTotal().toFixed(2)}</Text>
-              </Flex>
+              </HStack>
               {discount > 0 && (
-                <Flex justify="space-between" color="green.500">
+                <HStack justify="space-between">
                   <Text>Discount</Text>
-                  <Text>-${discount.toFixed(2)}</Text>
-                </Flex>
+                  <Text color="green.500">-${discount.toFixed(2)}</Text>
+                </HStack>
               )}
               <Divider />
-              <Flex justify="space-between" fontWeight="bold">
-                <Text>Total</Text>
-                <Text>${total.toFixed(2)}</Text>
-              </Flex>
-
-              <Box mb={4}>
+              <HStack justify="space-between">
+                <Text fontWeight="bold">Total</Text>
+                <Text fontWeight="bold">${(calculateTotal() - discount).toFixed(2)}</Text>
+              </HStack>
+              <InputGroup>
                 <Input
                   placeholder="Enter voucher code"
                   value={voucherCode}
                   onChange={(e) => setVoucherCode(e.target.value)}
-                  mb={2}
                 />
                 <Button
+                  colorScheme="blue"
                   onClick={handleApplyVoucher}
-                  width="full"
-                  isLoading={isSubmitting}
+                  isDisabled={!voucherCode.trim()}
                 >
-                  Apply Voucher
+                  Apply
                 </Button>
-              </Box>
-
+              </InputGroup>
               <Button
-                colorScheme="blue"
+                colorScheme="green"
                 size="lg"
-                onClick={() => navigate('/checkout')}
+                onClick={() => navigate('/Checkout')}
+                isDisabled={items.length === 0}
               >
                 Proceed to Checkout
               </Button>

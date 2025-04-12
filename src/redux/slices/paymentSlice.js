@@ -1,57 +1,105 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import paymentApi from '../../api/paymentApi';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
-export const executePayment = createAsyncThunk(
-  'orders/executePayment',
-  async ({ orderId, paymentId, paypalOrderId }, { rejectWithValue }) => {
+// Async thunks
+export const initializePayment = createAsyncThunk(
+  'payment/initializePayment',
+  async (paymentDetails, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/api/Payment/execute-payment`, {
-        orderId,
-        paymentId,
-        paypalOrderId
-      });
-      return response.data;
+      const response = await paymentApi.createPayment(paymentDetails);
+      return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Payment execution failed');
+      return rejectWithValue(error.response.data);
     }
   }
 );
 
+export const executePayment = createAsyncThunk(
+  'payment/executePayment',
+  async ({ paymentId, payerId }, { rejectWithValue }) => {
+    try {
+      const response = await paymentApi.executePayment(paymentId, payerId);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const cancelPayment = createAsyncThunk(
+  'payment/cancelPayment',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await paymentApi.cancelPayment();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+// Initial state
 const initialState = {
+  paymentUrl: null,
+  paymentStatus: null,
   loading: false,
-  error: null,
-  paymentDetails: null,
+  error: null
 };
 
+// Slice
 const paymentSlice = createSlice({
   name: 'payment',
   initialState,
   reducers: {
-    clearPaymentError: (state) => {
+    clearPaymentState: (state) => {
+      state.paymentUrl = null;
+      state.paymentStatus = null;
       state.error = null;
-    },
-    clearPaymentDetails: (state) => {
-      state.paymentDetails = null;
-    },
+    }
   },
   extraReducers: (builder) => {
     builder
+      // Initialize Payment
+      .addCase(initializePayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(initializePayment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.paymentUrl = action.payload.paymentUrl;
+      })
+      .addCase(initializePayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Execute Payment
       .addCase(executePayment.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(executePayment.fulfilled, (state, action) => {
         state.loading = false;
-        state.paymentDetails = action.payload;
+        state.paymentStatus = 'completed';
       })
       .addCase(executePayment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      // Cancel Payment
+      .addCase(cancelPayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(cancelPayment.fulfilled, (state) => {
+        state.loading = false;
+        state.paymentStatus = 'cancelled';
+      })
+      .addCase(cancelPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
-  },
+  }
 });
 
-export const { clearPaymentError, clearPaymentDetails } = paymentSlice.actions;
+export const { clearPaymentState } = paymentSlice.actions;
 export default paymentSlice.reducer; 

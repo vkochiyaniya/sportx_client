@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -22,8 +22,14 @@ import {
   Select,
   Flex,
   Spinner,
+  Alert,
+  AlertIcon,
+  HStack,
+  Badge,
 } from '@chakra-ui/react';
-import { setShippingInfo, createOrder } from '../redux/slices/orderSlice';
+import { setShippingInfo, createOrder, clearCurrentOrder } from '../redux/slices/orderSlice';
+import { initializePayment, executePayment, clearPaymentState } from '../redux/slices/paymentSlice';
+import { clearCart } from '../redux/slices/cartSlice';
 import OrderSummary from '../components/checkout/OrderSummary';
 
 const Checkout = () => {
@@ -31,11 +37,14 @@ const Checkout = () => {
   const navigate = useNavigate();
   const toast = useToast();
   
-  // Get user and cart state from Redux
-  const { user } = useSelector((state) => state.auth);
-  const { items: cartItems, total: cartTotal } = useSelector((state) => state.cart);
-  const { loading, error, currentOrder } = useSelector((state) => state.orders);
-  
+  const { token, userId } = useSelector((state) => state.auth);
+  const { items, total } = useSelector((state) => state.cart);
+  const { loading: orderLoading, error: orderError, currentOrder } = useSelector((state) => state.order);
+  const { loading: paymentLoading, error: paymentError, paymentUrl, paymentStatus } = useSelector((state) => state.payment);
+
+  const [paymentId, setPaymentId] = useState(null);
+  const [payerId, setPayerId] = useState(null);
+
   // Form validation with react-hook-form
   const {
     handleSubmit,
@@ -48,225 +57,167 @@ const Checkout = () => {
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   
-  // Redirect if cart is empty
   useEffect(() => {
-    if (cartItems.length === 0) {
-      toast({
-        title: 'Cart is empty',
-        description: 'Please add items to your cart before checkout.',
-        status: 'warning',
-        duration: 3000,
-        isClosable: true,
-      });
-      navigate('/cart');
+    if (!token || !userId) {
+      navigate('/login');
+      return;
     }
-  }, [cartItems, navigate, toast]);
+
+    // Check for payment parameters in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentId = urlParams.get('paymentId');
+    const payerId = urlParams.get('PayerID');
+
+    if (paymentId && payerId) {
+      setPaymentId(paymentId);
+      setPayerId(payerId);
+      handleExecutePayment(paymentId, payerId);
+    }
+  }, [token, userId, navigate]);
   
   // Pre-fill form with user data if available
   useEffect(() => {
-    if (user) {
-      setValue('fullName', user.fullName || '');
-      setValue('email', user.email || '');
-      setValue('phone', user.phone || '');
+    if (token) {
+      setValue('fullName', token.fullName || '');
+      setValue('email', token.email || '');
+      setValue('phone', token.phone || '');
     }
-  }, [user, setValue]);
+  }, [token, setValue]);
   
-  // Handle form submission
-  const onSubmit = async (data) => {
+  const handleCreateOrder = async () => {
     try {
-      // Save shipping info to Redux
-      dispatch(setShippingInfo(data));
-      
-      // Create order
-      const result = await dispatch(createOrder(user.id)).unwrap();
-      
-      // Navigate to payment page with order ID
-      navigate(`/payment/${result.id}`);
-    } catch (err) {
-      toast({
-        title: 'Error',
-        description: err.message || 'Failed to create order. Please try again.',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      await dispatch(createOrder(userId)).unwrap();
+    } catch (error) {
+      console.error('Failed to create order:', error);
     }
   };
-  
-  if (loading) {
+
+  const handleInitializePayment = async () => {
+    if (!currentOrder) {
+      toast({
+        title: 'Error',
+        description: 'Please create an order first',
+        status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+
+    try {
+      const paymentDetails = {
+        orderId: currentOrder.id,
+        amount: total,
+        currency: 'USD',
+        description: 'Sports Equipment Purchase'
+      };
+
+      await dispatch(initializePayment(paymentDetails)).unwrap();
+    } catch (error) {
+      console.error('Failed to initialize payment:', error);
+    }
+  };
+
+  const handleExecutePayment = async (paymentId, payerId) => {
+    try {
+      await dispatch(executePayment({ paymentId, payerId })).unwrap();
+      dispatch(clearCart());
+      dispatch(clearCurrentOrder());
+      dispatch(clearPaymentState());
+      navigate('/orders');
+    } catch (error) {
+      console.error('Failed to execute payment:', error);
+    }
+  };
+
+  if (orderLoading || paymentLoading) {
     return (
-      <Container maxW="container.xl" py={8}>
-        <Flex justify="center" align="center" minH="60vh">
-          <Spinner size="xl" color="blue.500" />
-        </Flex>
+      <Container centerContent py={10}>
+        <Spinner size="xl" />
+        <Text mt={4}>Processing your order...</Text>
       </Container>
     );
   }
-  
+
+  if (orderError || paymentError) {
+    return (
+      <Container py={10}>
+        <Alert status="error" mb={4}>
+          <AlertIcon />
+          {orderError || paymentError}
+        </Alert>
+        <Button onClick={() => navigate('/cart')}>Back to Cart</Button>
+      </Container>
+    );
+  }
+
+  if (paymentUrl) {
+    window.location.href = paymentUrl;
+    return null;
+  }
+
   return (
     <Container maxW="container.xl" py={8}>
-      <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={8}>
-        {/* Shipping Information Form */}
-        <GridItem>
-          <Box
-            as="form"
-            onSubmit={handleSubmit(onSubmit)}
-            bg={bgColor}
-            p={6}
-            borderRadius="lg"
-            borderWidth="1px"
-            borderColor={borderColor}
-            shadow="sm"
-          >
-            <VStack spacing={6} align="stretch">
-              <Heading size="lg">Shipping Information</Heading>
-              
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-                <FormControl isInvalid={errors.fullName}>
-                  <FormLabel>Full Name</FormLabel>
-                  <Input
-                    {...register('fullName', {
-                      required: 'Full name is required',
-                      minLength: { value: 3, message: 'Minimum length should be 3' }
-                    })}
-                  />
-                  <FormErrorMessage>
-                    {errors.fullName && errors.fullName.message}
-                  </FormErrorMessage>
-                </FormControl>
-                
-                <FormControl isInvalid={errors.email}>
-                  <FormLabel>Email</FormLabel>
-                  <Input
-                    type="email"
-                    {...register('email', {
-                      required: 'Email is required',
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'Invalid email address'
-                      }
-                    })}
-                  />
-                  <FormErrorMessage>
-                    {errors.email && errors.email.message}
-                  </FormErrorMessage>
-                </FormControl>
-              </SimpleGrid>
-              
-              <FormControl isInvalid={errors.phone}>
-                <FormLabel>Phone Number</FormLabel>
-                <Input
-                  type="tel"
-                  {...register('phone', {
-                    required: 'Phone number is required',
-                    pattern: {
-                      value: /^\+?[1-9]\d{1,14}$/,
-                      message: 'Invalid phone number'
-                    }
-                  })}
-                />
-                <FormErrorMessage>
-                  {errors.phone && errors.phone.message}
-                </FormErrorMessage>
-              </FormControl>
-              
-              <FormControl isInvalid={errors.address}>
-                <FormLabel>Street Address</FormLabel>
-                <Input
-                  {...register('address', {
-                    required: 'Address is required'
-                  })}
-                />
-                <FormErrorMessage>
-                  {errors.address && errors.address.message}
-                </FormErrorMessage>
-              </FormControl>
-              
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-                <FormControl isInvalid={errors.city}>
-                  <FormLabel>City</FormLabel>
-                  <Input
-                    {...register('city', {
-                      required: 'City is required'
-                    })}
-                  />
-                  <FormErrorMessage>
-                    {errors.city && errors.city.message}
-                  </FormErrorMessage>
-                </FormControl>
-                
-                <FormControl isInvalid={errors.state}>
-                  <FormLabel>State/Province</FormLabel>
-                  <Input
-                    {...register('state', {
-                      required: 'State is required'
-                    })}
-                  />
-                  <FormErrorMessage>
-                    {errors.state && errors.state.message}
-                  </FormErrorMessage>
-                </FormControl>
-              </SimpleGrid>
-              
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-                <FormControl isInvalid={errors.zipCode}>
-                  <FormLabel>ZIP / Postal Code</FormLabel>
-                  <Input
-                    {...register('zipCode', {
-                      required: 'ZIP code is required'
-                    })}
-                  />
-                  <FormErrorMessage>
-                    {errors.zipCode && errors.zipCode.message}
-                  </FormErrorMessage>
-                </FormControl>
-                
-                <FormControl isInvalid={errors.country}>
-                  <FormLabel>Country</FormLabel>
-                  <Select
-                    {...register('country', {
-                      required: 'Country is required'
-                    })}
-                    placeholder="Select country"
-                  >
-                    <option value="US">United States</option>
-                    <option value="CA">Canada</option>
-                    <option value="GB">United Kingdom</option>
-                    <option value="AU">Australia</option>
-                    {/* Add more countries as needed */}
-                  </Select>
-                  <FormErrorMessage>
-                    {errors.country && errors.country.message}
-                  </FormErrorMessage>
-                </FormControl>
-              </SimpleGrid>
-              
-              {error && (
-                <Text color="red.500" fontSize="sm">
-                  {error}
-                </Text>
-              )}
-              
-              <Divider />
-              
-              <Button
-                type="submit"
-                colorScheme="blue"
-                size="lg"
-                isLoading={loading}
-                loadingText="Creating Order..."
-              >
-                Continue to Payment
-              </Button>
-            </VStack>
-        </Box>
-        </GridItem>
+      <VStack spacing={8} align="stretch">
+        <Heading size="xl">Checkout</Heading>
         
         {/* Order Summary */}
-        <GridItem>
-          <OrderSummary cartItems={cartItems} cartTotal={cartTotal} />
-        </GridItem>
-      </Grid>
+        <Box p={6} borderWidth={1} borderRadius="lg">
+          <Heading size="md" mb={4}>Order Summary</Heading>
+          {items.map((item) => (
+            <Box key={item.id} mb={4}>
+              <HStack justify="space-between">
+                <Text>{item.name}</Text>
+                <Text>${item.price * item.quantity}</Text>
+              </HStack>
+              <Text fontSize="sm" color="gray.500">Quantity: {item.quantity}</Text>
+            </Box>
+          ))}
+          <Divider my={4} />
+          <HStack justify="space-between">
+            <Text fontWeight="bold">Total</Text>
+            <Text fontWeight="bold">${total}</Text>
+          </HStack>
+        </Box>
+
+        {/* Order Status */}
+        {currentOrder && (
+          <Box p={6} borderWidth={1} borderRadius="lg">
+            <Heading size="md" mb={4}>Order Status</Heading>
+            <Badge colorScheme="green" p={2} borderRadius="md">
+              Order Created
+            </Badge>
+          </Box>
+        )}
+
+        {/* Payment Status */}
+        {paymentStatus && (
+          <Box p={6} borderWidth={1} borderRadius="lg">
+            <Heading size="md" mb={4}>Payment Status</Heading>
+            <Badge 
+              colorScheme={paymentStatus === 'completed' ? 'green' : 'red'} 
+              p={2} 
+              borderRadius="md"
+            >
+              {paymentStatus === 'completed' ? 'Payment Completed' : 'Payment Cancelled'}
+            </Badge>
+          </Box>
+        )}
+
+        {/* Action Buttons */}
+        <Flex justify="space-between">
+          <Button onClick={() => navigate('/cart')}>Back to Cart</Button>
+          {!currentOrder && (
+            <Button colorScheme="blue" onClick={handleCreateOrder}>
+              Create Order
+            </Button>
+          )}
+          {currentOrder && !paymentStatus && (
+            <Button colorScheme="green" onClick={handleInitializePayment}>
+              Proceed to Payment
+            </Button>
+          )}
+        </Flex>
+      </VStack>
     </Container>
   );
 };

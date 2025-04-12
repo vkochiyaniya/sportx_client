@@ -12,6 +12,7 @@ import ResetPassword from '../components/auth/ResetPassword';
 import AboutUs from '../Pages/AboutUs';
 import Contact from '../Pages/Contact';
 import Payment from '../Pages/Payment';
+import Checkout from '../Pages/Checkout';
 
 const AllRoutes = () => {
   return (
@@ -47,6 +48,14 @@ const AllRoutes = () => {
         }
       />
       <Route
+        path="/Checkout"
+        element={
+          <ProtectedRoute>
+            <Checkout />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/payment/:orderId"
         element={
           <ProtectedRoute>
@@ -58,4 +67,4 @@ const AllRoutes = () => {
   );
 };
 
-export default AllRoutes;
+export default AllRoutes; 

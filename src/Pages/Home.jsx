@@ -1,4 +1,5 @@
 // HomePage.jsx
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -11,12 +12,34 @@ import {
   Stack,
   Text,
   useBreakpointValue,
+  VStack,
+  useColorModeValue,
+  keyframes,
+  chakra,
+  HStack,
+  Icon,
+  Badge,
+  SimpleGrid,
 } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
+import { motion, useAnimation } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
+import { ArrowForwardIcon, StarIcon } from '@chakra-ui/icons';
+import { Link as RouterLink } from 'react-router-dom';
+
+// Animations
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+const MotionBox = chakra(motion.div);
 
 const HomePage = () => {
-  const navigate = useNavigate();
   const responsiveColumns = useBreakpointValue({ base: 1, md: 2, lg: 3 });
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const controls = useAnimation();
+  const [ref, inView] = useInView();
+  const bgOverlay = useColorModeValue('rgba(255,255,255,0.9)', 'rgba(0,0,0,0.8)');
 
   const heroContent = {
     heading: "Elevate Your Game",
@@ -43,214 +66,248 @@ const HomePage = () => {
     },
   ];
 
+  const testimonials = [
+    {
+      text: "Best sports gear I've ever bought. High quality and great customer service!",
+      author: "Jane D."
+    },
+    {
+      text: "Amazing products! My performance has improved thanks to this gear!",
+      author: "Mark T."
+    }
+  ];
+
   const featuredProducts = [
     {
-      name: "Pro Runner XT",
-      price: "$149.99",
-      image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5",
+      id: 1,
+      name: "Pro Tennis Racket",
+      image: "https://images.unsplash.com/photo-1617083277624-481a0b083f4f?w=800&auto=format&fit=crop",
+      price: 199.99,
+      category: "Tennis"
     },
     {
-      name: "Training Gloves",
-      price: "$39.99",
-      image: "https://images.unsplash.com/photo-1583373834259-46cc92173cb7",
+      id: 2,
+      name: "Premium Football",
+      image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&auto=format&fit=crop",
+      price: 49.99,
+      category: "Football"
     },
     {
-      name: "Sports Backpack",
-      price: "$79.99",
-      image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3",
+      id: 3,
+      name: "Basketball Pro",
+      image: "https://images.unsplash.com/photo-1519861155730-0b5fbf0dd889?w=800&auto=format&fit=crop",
+      price: 89.99,
+      category: "Basketball"
+    },
+    {
+      id: 4,
+      name: "Elite Running Shoes",
+      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop",
+      price: 159.99,
+      category: "Running"
     },
   ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (inView) {
+      controls.start({ opacity: 1, y: 0 });
+    }
+  }, [controls, inView]);
 
   return (
     <Box>
       {/* Hero Section */}
-      <Box
-        position="relative"
-        h="100vh"
-        bgImage={`url('${heroContent.bgImage}')`}
-        bgSize="cover"
-        bgPosition="center"
-      >
-        <Box
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          bgGradient="linear(to-r, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3))"
-        >
-          <Container centerContent h="full" maxW="container.xl">
-            <Stack
-              spacing={6}
-              textAlign="center"
-              color="white"
-              mt={{ base: 20, md: 40 }}
-            >
-              <Heading fontSize={{ base: "4xl", md: "6xl" }}>
-                {heroContent.heading}
-              </Heading>
-              <Text fontSize={{ base: "lg", md: "xl" }}>
-                {heroContent.subheading}
-              </Text>
-              <Button
-                colorScheme="red"
-                size="lg"
-                width="fit-content"
-                mx="auto"
-                onClick={() => navigate("/shop")}
-              >
-                Shop Now
-              </Button>
-            </Stack>
-          </Container>
-        </Box>
-      </Box>
-
-      {/* Categories Grid */}
-      <Container maxW="container.xl" py={16}>
-        <Heading textAlign="center" mb={12} fontSize="3xl">
-          Shop By Category
-        </Heading>
-        <Grid
-          templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
-          gap={8}
-          px={{ base: 4, md: 0 }}
-        >
-          {categories.map((category, index) => (
-            <Box
-              key={index}
-              position="relative"
-              borderRadius="xl"
-              overflow="hidden"
-              _hover={{ transform: "scale(1.02)", transition: "0.3s ease" }}
-            >
-              <Image
-                src={category.image}
-                alt={category.title}
-                h="400px"
-                w="full"
+      <Flex position="relative" h="500px" bg="orange.500">
+        <Container maxW="container.xl" display="flex">
+          <Flex flex="1" align="center">
+            <Box flex="1">
+              <Image 
+                src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&auto=format&fit=crop"
+                alt="Sports Equipment"
+                position="absolute"
+                right="0"
+                top="0"
+                h="100%"
+                w="50%"
                 objectFit="cover"
               />
-              <Box
-                position="absolute"
-                bottom={0}
-                left={0}
-                right={0}
-                p={6}
-                bgGradient="linear(to-t, rgba(0,0,0,0.8), transparent)"
-              >
-                <Heading color="white" fontSize="2xl">
-                  {category.title}
-                </Heading>
-                <Button
-                  mt={4}
-                  colorScheme="red"
-                  onClick={() => navigate(category.link)}
-                >
-                  Explore
-                </Button>
-              </Box>
             </Box>
-          ))}
-        </Grid>
-      </Container>
-
-      {/* Featured Products */}
-      <Box bg="gray.50" py={16}>
-        <Container maxW="container.xl">
-          <Heading textAlign="center" mb={12} fontSize="3xl">
-            Best Sellers
-          </Heading>
-          <Flex
-            overflowX="auto"
-            pb={6}
-            css={{
-              "&::-webkit-scrollbar": { display: "none" },
-              msOverflowStyle: "none",
-              scrollbarWidth: "none",
-            }}
-          >
-            {featuredProducts.map((product, index) => (
-              <Box
-                key={index}
-                minW={{ base: "300px", md: "400px" }}
-                mx={4}
+            <VStack 
+              align="flex-start" 
+              spacing={6} 
+              maxW="600px"
+              p={8}
+              color="white"
+              position="relative"
+              zIndex={1}
+            >
+              <Heading size="2xl" lineHeight="shorter">
+                PREMIUM SPORTS EQUIPMENT
+              </Heading>
+              <Text fontSize="xl">
+                Explore the latest high-quality gear for every sport. Whether you're a professional or just starting,
+                we have the perfect equipment for you.
+              </Text>
+              <Button
+                as={RouterLink}
+                to="/allproducts"
+                size="lg"
+                colorScheme="blue"
                 bg="white"
-                borderRadius="xl"
-                overflow="hidden"
-                boxShadow="lg"
+                color="orange.500"
+                _hover={{
+                  transform: 'translateY(-2px)',
+                  boxShadow: 'lg',
+                }}
               >
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  h="300px"
-                  w="full"
-                  objectFit="cover"
-                />
-                <Box p={6}>
-                  <Heading fontSize="xl">{product.name}</Heading>
-                  <Text fontSize="lg" fontWeight="bold" color="red.500" mt={2}>
-                    {product.price}
-                  </Text>
-                  <Button
-                    colorScheme="blackAlpha"
-                    mt={4}
-                    width="full"
-                    onClick={() => navigate("/product")}
-                  >
-                    Quick Add
-                  </Button>
-                </Box>
-              </Box>
-            ))}
+                EXPLORE PRODUCTS
+              </Button>
+            </VStack>
           </Flex>
         </Container>
-      </Box>
+      </Flex>
 
-      {/* Promo Banner */}
-      <Box bg="red.600" color="white" py={20}>
-        <Container maxW="container.xl" textAlign="center">
-          <Heading fontSize="4xl" mb={6}>
-            Summer Sale: Up to 50% Off
-          </Heading>
-          <Text fontSize="xl" mb={8}>
-            Limited time offer on selected items
-          </Text>
-          <Button
-            colorScheme="whiteAlpha"
-            size="lg"
-            onClick={() => navigate("/sale")}
-          >
-            Shop Sale
-          </Button>
+      {/* What Our Customers Say */}
+      <Box py={16} bg={useColorModeValue('gray.50', 'gray.900')}>
+        <Container maxW="container.xl">
+          <VStack spacing={8}>
+            <Heading textAlign="center" size="xl">
+              What Our Customers Say
+            </Heading>
+            <SimpleGrid columns={2} spacing={8} w="full">
+              {testimonials.map((testimonial, index) => (
+                <Box
+                  key={index}
+                  bg="white"
+                  p={6}
+                  rounded="lg"
+                  shadow="sm"
+                  _hover={{ shadow: 'md' }}
+                >
+                  <Text fontSize="lg" fontStyle="italic" mb={4}>
+                    "{testimonial.text}"
+                  </Text>
+                  <Text fontWeight="bold">- {testimonial.author}</Text>
+                </Box>
+              ))}
+            </SimpleGrid>
+          </VStack>
         </Container>
       </Box>
 
-      {/* Newsletter Section */}
-      <Container maxW="container.md" py={20}>
-        <Stack spacing={6} textAlign="center">
-          <Heading fontSize="3xl">Get the Latest Updates</Heading>
-          <Text fontSize="lg" color="gray.600">
-            Subscribe to our newsletter for exclusive offers and product releases
-          </Text>
-          <Flex gap={4} justify="center">
-            <Input
-              placeholder="Enter your email"
-              size="lg"
-              maxW="400px"
-              borderRadius="full"
+      {/* Products Grid */}
+      <Box py={16}>
+        <Container maxW="container.xl">
+          <VStack spacing={8}>
+            <Image
+              src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=800&auto=format&fit=crop"
+              alt="Sports Equipment Collection"
+              w="full"
+              h="300px"
+              objectFit="cover"
+              rounded="lg"
             />
+            <Heading textAlign="center" size="xl">
+              EXPLORE OUR PRODUCTS
+            </Heading>
+            <Text textAlign="center" color="gray.600">
+              Browse through our wide range of sports equipment for all your needs.
+            </Text>
             <Button
-              colorScheme="red"
+              as={RouterLink}
+              to="/allproducts"
               size="lg"
-              borderRadius="full"
+              colorScheme="orange"
               px={8}
             >
-              Subscribe
+              EXPLORE PRODUCTS
             </Button>
-          </Flex>
-        </Stack>
-      </Container>
+          </VStack>
+        </Container>
+      </Box>
+
+      {/* CTA Banner */}
+      <Box 
+        bg="orange.500" 
+        py={16}
+        position="relative"
+        overflow="hidden"
+      >
+        <Container maxW="container.xl">
+          <Grid
+            templateColumns={{ base: '1fr', md: '1fr 1fr 1fr' }}
+            gap={8}
+            alignItems="center"
+          >
+            <Image
+              src="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=400&auto=format&fit=crop"
+              alt="Cyclist"
+              h="300px"
+              objectFit="cover"
+              rounded="lg"
+            />
+            <VStack spacing={4} color="white" textAlign="center">
+              <Heading size="xl">YOUR ONE-STOP SHOP</Heading>
+              <Heading size="xl">FOR PREMIUM SPORTS</Heading>
+              <Heading size="xl">EQUIPMENT</Heading>
+              <Text fontSize="lg">
+                Explore the latest, high-quality gear for every sport.
+                Whether you're a professional or just starting,
+                we have the perfect equipment for you!
+              </Text>
+              <Button
+                as={RouterLink}
+                to="/allproducts"
+                size="lg"
+                colorScheme="blue"
+                bg="white"
+                color="orange.500"
+              >
+                EXPLORE PRODUCTS
+              </Button>
+            </VStack>
+            <Image
+              src="https://images.unsplash.com/photo-1599058917765-a780eda07a3e?w=400&auto=format&fit=crop"
+              alt="Soccer Player"
+              h="300px"
+              objectFit="cover"
+              rounded="lg"
+            />
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* Featured Sports Equipment */}
+      <Box py={16}>
+        <Container maxW="container.xl">
+          <VStack spacing={8}>
+            <Heading textAlign="center" size="xl">
+              FEATURED SPORTS EQUIPMENT
+            </Heading>
+            <Text textAlign="center" color="gray.500">
+              No featured products available.
+            </Text>
+          </VStack>
+        </Container>
+      </Box>
+
+      {/* Get Your Gear Today */}
+      <Box bg="blue.600" color="white" py={16}>
+        <Container maxW="container.xl" textAlign="center">
+          <VStack spacing={6}>
+            <Heading size="xl">GET YOUR GEAR TODAY</Heading>
+            <Text fontSize="lg">Don't miss out on our exclusive offers.</Text>
+            <Text color="gray.300">Sports Gear</Text>
+          </VStack>
+        </Container>
+      </Box>
     </Box>
   );
 };

@@ -17,7 +17,6 @@ import Profile from "./Pages/MyAccount";
 import Orders from "./Pages/OrderConfirmation";
 
 // Import Admin Pages
-// import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminDashboard from "./Pages/admin/AdminDashboard";
 import ProductsPage from "./Pages/admin/ProductsPage";
 import CategoriesPage from "./Pages/admin/CategoriesPage";
@@ -34,10 +33,9 @@ import PrivateRoute from "./components/auth/PrivateRoute";
 
 // Import ProtectedRoute for authentication
 import ProtectedRoute from "./PrivateRoute/ProtectedRoute";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { selectAuthToken } from './redux/selectors/authSelectors';
-import { useDispatch } from 'react-redux';
-import { logout } from './redux/slices/authSlice';
+import { logout, initializeAuth } from './redux/slices/authSlice';
 import { jwtDecode } from 'jwt-decode';
 
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID;
@@ -48,6 +46,9 @@ const App = () => {
   const token = useSelector(selectAuthToken);
 
   useEffect(() => {
+    // Initialize auth state from localStorage
+    dispatch(initializeAuth());
+
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
@@ -79,7 +80,7 @@ const App = () => {
               {!isAdminRoute && <Navbar />}
               <Box as="main" flex="1">
                 <Routes>
-                  {/* Admin Routes with ProtectedRoute protection */}
+                  {/* Admin Routes */}
                   <Route path="/admin" element={
                     <ProtectedRoute requireAdmin={true}>
                       <AdminDashboard />
@@ -111,7 +112,7 @@ const App = () => {
                       <ContactsPage />
                     </ProtectedRoute>
                   } />
-                  
+
                   {/* All other routes */}
                   <Route path="/*" element={<AllRoutes />} />
                 </Routes>

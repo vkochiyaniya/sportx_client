@@ -1,17 +1,30 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import orderApi from '../../api/orderApi';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-// Async thunks for order operations
+// Async thunks
 export const createOrder = createAsyncThunk(
-  'orders/createOrder',
-  async (orderData, { rejectWithValue }) => {
+  'order/createOrder',
+  async (userId, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/api/Orders/CreateOrder`, orderData);
-      return response.data;
+      const response = await orderApi.createOrder(userId);
+      return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Failed to create order');
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const fetchOrderById = createAsyncThunk(
+  'order/fetchOrderById',
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const response = await orderApi.getOrderDetails(orderId);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
     }
   }
 );
@@ -112,82 +125,59 @@ export const getOrderItems = createAsyncThunk(
   }
 );
 
-export const fetchUserOrders = createAsyncThunk(
-  'orders/fetchUserOrders',
+export const fetchOrderHistory = createAsyncThunk(
+  'order/fetchOrderHistory',
   async (userId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/Order/GetUserOrders/${userId}`);
-      return response.data;
+      const response = await orderApi.getOrderHistory(userId);
+      return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Failed to fetch user orders');
+      return rejectWithValue(error.response.data);
     }
   }
 );
 
-export const fetchOrderById = createAsyncThunk(
-  'orders/fetchOrderById',
+export const fetchOrderDetails = createAsyncThunk(
+  'order/fetchOrderDetails',
   async (orderId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/api/Order/GetOrderById/${orderId}`);
-      return response.data;
+      const response = await orderApi.getOrderDetails(orderId);
+      return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Failed to fetch order details');
+      return rejectWithValue(error.response.data);
     }
   }
 );
 
 // Initial state
 const initialState = {
+  orders: [],
   currentOrder: null,
-  userOrders: [],
-  paymentDetails: null,
-  invoiceUrl: null,
-  orderItems: [],
-  shippingInfo: {
-    fullName: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: '',
-    phone: '',
-    email: ''
-  },
-  paymentMethod: 'paypal', // Default payment method
   loading: false,
   error: null,
-  paymentLoading: false,
-  paymentError: null
+  orderHistory: [],
+  orderDetails: null,
+  shippingInfo: null
 };
 
-// Order slice
+// Slice
 const orderSlice = createSlice({
-  name: 'orders',
+  name: 'order',
   initialState,
   reducers: {
     clearCurrentOrder: (state) => {
       state.currentOrder = null;
-      state.paymentDetails = null;
-      state.invoiceUrl = null;
-      state.orderItems = [];
     },
     clearError: (state) => {
       state.error = null;
-      state.paymentError = null;
     },
     setShippingInfo: (state, action) => {
-      state.shippingInfo = { ...state.shippingInfo, ...action.payload };
-    },
-    setPaymentMethod: (state, action) => {
-      state.paymentMethod = action.payload;
-    },
-    resetOrderState: (state) => {
-      return initialState;
+      state.shippingInfo = action.payload;
     }
   },
   extraReducers: (builder) => {
     builder
-      // Create order
+      // Create Order
       .addCase(createOrder.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -200,110 +190,7 @@ const orderSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
-      // Initialize payment
-      .addCase(initializePayment.pending, (state) => {
-        state.paymentLoading = true;
-        state.paymentError = null;
-      })
-      .addCase(initializePayment.fulfilled, (state, action) => {
-        state.paymentLoading = false;
-        state.paymentDetails = action.payload;
-      })
-      .addCase(initializePayment.rejected, (state, action) => {
-        state.paymentLoading = false;
-        state.paymentError = action.payload;
-      })
-      
-      // Execute payment
-      .addCase(executePayment.pending, (state) => {
-        state.paymentLoading = true;
-        state.paymentError = null;
-      })
-      .addCase(executePayment.fulfilled, (state, action) => {
-        state.paymentLoading = false;
-        state.currentOrder = {
-          ...state.currentOrder,
-          status: 'paid',
-          paymentDetails: action.payload
-        };
-      })
-      .addCase(executePayment.rejected, (state, action) => {
-        state.paymentLoading = false;
-        state.paymentError = action.payload;
-      })
-      
-      // Cancel payment
-      .addCase(cancelPayment.pending, (state) => {
-        state.paymentLoading = true;
-        state.paymentError = null;
-      })
-      .addCase(cancelPayment.fulfilled, (state) => {
-        state.paymentLoading = false;
-        state.paymentDetails = null;
-      })
-      .addCase(cancelPayment.rejected, (state, action) => {
-        state.paymentLoading = false;
-        state.paymentError = action.payload;
-      })
-      
-      // Generate invoice
-      .addCase(generateInvoice.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(generateInvoice.fulfilled, (state, action) => {
-        state.loading = false;
-        state.invoiceUrl = action.payload.url;
-      })
-      .addCase(generateInvoice.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      
-      // Get invoice by order ID
-      .addCase(getInvoiceByOrderId.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getInvoiceByOrderId.fulfilled, (state, action) => {
-        state.loading = false;
-        state.invoiceUrl = action.payload.url;
-      })
-      .addCase(getInvoiceByOrderId.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      
-      // Get order items
-      .addCase(getOrderItems.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getOrderItems.fulfilled, (state, action) => {
-        state.loading = false;
-        state.orderItems = action.payload.items;
-      })
-      .addCase(getOrderItems.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      
-      // Fetch user orders
-      .addCase(fetchUserOrders.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchUserOrders.fulfilled, (state, action) => {
-        state.loading = false;
-        state.userOrders = action.payload;
-      })
-      .addCase(fetchUserOrders.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      
-      // Fetch order by ID
+      // Fetch Order By Id
       .addCase(fetchOrderById.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -315,16 +202,35 @@ const orderSlice = createSlice({
       .addCase(fetchOrderById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      // Fetch Order History
+      .addCase(fetchOrderHistory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrderHistory.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orderHistory = action.payload;
+      })
+      .addCase(fetchOrderHistory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Fetch Order Details
+      .addCase(fetchOrderDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrderDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orderDetails = action.payload;
+      })
+      .addCase(fetchOrderDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
-  },
+  }
 });
 
-export const { 
-  clearCurrentOrder, 
-  clearError, 
-  setShippingInfo, 
-  setPaymentMethod,
-  resetOrderState
-} = orderSlice.actions;
-
+export const { clearCurrentOrder, clearError, setShippingInfo } = orderSlice.actions;
 export default orderSlice.reducer; 

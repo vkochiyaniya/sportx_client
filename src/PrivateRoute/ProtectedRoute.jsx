@@ -13,10 +13,18 @@ import {
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
   const location = useLocation();
   const toast = useToast();
-  const { isAuthenticated, loading, user } = useSelector((state) => state.auth);
+  const { isAuthenticated, loading, token, userId } = useSelector((state) => state.auth);
 
   useEffect(() => {
+    console.log('ProtectedRoute auth state:', {
+      isAuthenticated,
+      loading,
+      token: token ? 'present' : 'missing',
+      userId: userId ? 'present' : 'missing'
+    });
+
     if (!loading && !isAuthenticated) {
+      console.log('Redirecting to login - auth check failed');
       toast({
         title: 'Authentication required',
         description: 'Please login to access this page',
@@ -25,10 +33,11 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
         isClosable: true,
       });
     }
-  }, [isAuthenticated, loading, toast]);
+  }, [isAuthenticated, loading, token, userId, toast]);
 
   // Show loading spinner while checking authentication
   if (loading) {
+    console.log('Showing loading spinner');
     return (
       <Center minH="100vh" bg="gray.50">
         <VStack spacing={4}>
@@ -47,7 +56,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    // Save the attempted URL for redirect after login
+    console.log('Not authenticated, redirecting to login');
     return (
       <Navigate
         to="/login"
@@ -57,24 +66,9 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
     );
   }
 
-  // Check for admin access if required
-  if (requireAdmin && user?.role !== 'admin') {
-    toast({
-      title: 'Access Denied',
-      description: 'You do not have permission to access this page',
-      status: 'error',
-      duration: 5000,
-      isClosable: true,
-    });
-    return <Navigate to="/" replace />;
-  }
-
+  console.log('Auth check passed, rendering protected content');
   // Render the protected component
-  return (
-    <Box>
-      {children}
-    </Box>
-  );
+  return children;
 };
 
 export default ProtectedRoute; 
