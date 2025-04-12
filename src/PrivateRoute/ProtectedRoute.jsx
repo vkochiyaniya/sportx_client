@@ -32,7 +32,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
         duration: 3000,
         isClosable: true,
       });
-    }
+    } 
   }, [isAuthenticated, loading, token, userId, toast]);
 
   // Show loading spinner while checking authentication

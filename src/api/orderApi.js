@@ -1,7 +1,6 @@
 // src/api/orderApi.js
 import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { API_URL } from './api';
 
 const orderApi = {
   // Download order
@@ -12,7 +11,7 @@ const orderApi = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error downloading order:', error);
+      console.error('Download order error:', error);
       throw error;
     }
   },
@@ -28,12 +27,19 @@ const orderApi = {
   },
   
   // Create new order
-  createOrder: async (userId) => {
+  createOrder: async (orderData) => {
     try {
-      const response = await axios.post(`${API_URL}/api/Order/create-order`, { userId });
+      console.log('Creating order with data:', orderData);
+      const response = await axios.post(`${API_URL}/api/Orders/CreateOrder`, orderData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      console.log('Create order response:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Error creating order:', error);
+      console.error('Create order error:', error);
       throw error;
     }
   },
@@ -51,42 +57,45 @@ const orderApi = {
   // Generate invoice
   generateInvoice: async (orderId) => {
     try {
-      const response = await axios.get(`${API_URL}/api/Order/GenerateInvoice/${orderId}`, {
+      const response = await axios.get(`${API_URL}/api/Order/GenerateInvoice`, {
+        params: { orderId },
         responseType: 'blob'
       });
       return response.data;
     } catch (error) {
-      console.error('Error generating invoice:', error);
+      console.error('Generate invoice error:', error);
       throw error;
     }
   },
 
   getOrderHistory: async (userId) => {
     try {
-      const response = await axios.get(`${API_URL}/api/Order/history/${userId}`);
+      const response = await axios.get(`${API_URL}/api/Order/OrderHistory/${userId}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching order history:', error);
+      console.error('Get order history error:', error);
       throw error;
     }
   },
 
   getOrderDetails: async (orderId) => {
     try {
-      const response = await axios.get(`${API_URL}/api/Order/details/${orderId}`);
+      const response = await axios.get(`${API_URL}/api/Order/OrderDetails/${orderId}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching order details:', error);
+      console.error('Get order details error:', error);
       throw error;
     }
   },
 
   getInvoice: async (orderId) => {
     try {
-      const response = await axios.get(`${API_URL}/api/Order/InvoiceByOrderID/${orderId}`);
+      const response = await axios.get(`${API_URL}/api/Order/InvoiceByOrderID/${orderId}`, {
+        responseType: 'blob'
+      });
       return response.data;
     } catch (error) {
-      console.error('Error fetching invoice:', error);
+      console.error('Get invoice error:', error);
       throw error;
     }
   }

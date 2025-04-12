@@ -1,16 +1,17 @@
 // src/api/paymentApi.js
 import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { API_URL } from './api.js';
 
 const paymentApi = {
   // Create payment
-  createPayment: async (paymentDetails) => {
+  createPayment: async (orderId) => {
     try {
-      const response = await axios.post(`${API_URL}/api/Payment/create-payment`, paymentDetails);
+      const response = await axios.post(`${API_URL}/api/Payment/create-payment`, {
+        orderId
+      });
       return response.data;
     } catch (error) {
-      console.error('Error creating payment:', error);
+      console.error('Create payment error:', error);
       throw error;
     }
   },
@@ -23,18 +24,20 @@ const paymentApi = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error executing payment:', error);
+      console.error('Execute payment error:', error);
       throw error;
     }
   },
   
   // Cancel payment
-  cancelPayment: async () => {
+  cancelPayment: async (paymentId) => {
     try {
-      const response = await axios.get(`${API_URL}/api/Payment/cancel-payment`);
+      const response = await axios.get(`${API_URL}/api/Payment/cancel-payment`, {
+        params: { paymentId }
+      });
       return response.data;
     } catch (error) {
-      console.error('Error canceling payment:', error);
+      console.error('Cancel payment error:', error);
       throw error;
     }
   }
